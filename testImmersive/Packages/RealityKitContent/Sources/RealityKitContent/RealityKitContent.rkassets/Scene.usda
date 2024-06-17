@@ -1,0 +1,97 @@
+#usda 1.0
+(
+    defaultPrim = "Root"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "Root"
+{
+    reorder nameChildren = ["Cube", "Stereoscopic"]
+    rel material:binding = None (
+        bindMaterialAs = "weakerThanDescendants"
+    )
+
+    def Cube "Cube" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </Root/Cube/DefaultMaterial>
+        double size = 0.2
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (5, 3, 2.220446e-16)
+        float3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            prepend token outputs:surface.connect = </Root/Cube/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+    }
+
+    def Xform "Stereoscopic" (
+        active = true
+    )
+    {
+        def Material "stereoscopicMetrial"
+        {
+            prepend token outputs:mtlx:surface.connect = </Root/Stereoscopic/stereoscopicMetrial/PreviewSurface.outputs:out>
+            token outputs:realitykit:vertex
+            float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (299.25, 99.5)
+            float2 ui:nodegraph:realitykit:subgraphOutputs:size = (181.5, 99)
+
+            def Shader "PreviewSurface"
+            {
+                uniform token info:id = "ND_UsdPreviewSurface_surfaceshader"
+                color3f inputs:diffuseColor.connect = </Root/Stereoscopic/stereoscopicMetrial/GeometrySwitchCameraIndex.outputs:out>
+                float inputs:roughness
+                token outputs:out
+                float2 ui:nodegraph:node:pos = (74.25, 99.5)
+                float2 ui:nodegraph:node:size = (148.5, 199)
+            }
+
+            def Shader "GeometrySwitchCameraIndex"
+            {
+                uniform token info:id = "ND_realitykit_geometry_switch_cameraindex_color3"
+                color3f inputs:left.connect = </Root/Stereoscopic/stereoscopicMetrial/Image.outputs:out>
+                color3f inputs:mono
+                color3f inputs:right.connect = </Root/Stereoscopic/stereoscopicMetrial/Image_1.outputs:out>
+                color3f outputs:out
+                float2 ui:nodegraph:node:pos = (-137.76562, -28.304688)
+                float2 ui:nodegraph:node:size = (237, 145)
+                int ui:nodegraph:node:stackingOrder = 1
+            }
+
+            def Shader "Image"
+            {
+                uniform token info:id = "ND_image_color3"
+                asset inputs:file = @VAQ46296E5/stereo_left.png@
+                color3f outputs:out
+                float2 ui:nodegraph:node:pos = (-397.4375, -25.601562)
+                float2 ui:nodegraph:node:size = (148.5, 199)
+                int ui:nodegraph:node:stackingOrder = 9
+                string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:texcoord"]
+            }
+
+            def Shader "Image_1"
+            {
+                uniform token info:id = "ND_image_color3"
+                asset inputs:file = @VAQ46296E5/stereo_right.png@
+                color3f outputs:out
+                float2 ui:nodegraph:node:pos = (-401.90234, 189.38281)
+                float2 ui:nodegraph:node:size = (148.5, 199)
+                int ui:nodegraph:node:stackingOrder = 8
+            }
+        }
+    }
+}
+
